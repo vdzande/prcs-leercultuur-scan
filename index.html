@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRCS Leercultuur Scan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* PRCS Brand */
+  --prcs-orange:#F7951D; --prcs-orange-hover:#e58812; --prcs-orange-light:#FEF0DC;
+  --black:#000000; --white:#FFFFFF;
+  --gray-100:#F4F4F4; --gray-200:#E5E7EB; --gray-400:#A5A5A5; --gray-600:#767676; --gray-800:#333; --gray-900:#111;
+  /* Domain colors */
+  --d-besturing:#2B2B2B; --d-mensen:#3D6B3E; --d-inrichting:#1E3A5F; --d-middelen:#F7951D;
+  --d-besturing-light:#555; --d-mensen-light:#5A8F5B; --d-inrichting-light:#4A7CAE; --d-middelen-light:#FBBC6A;
+  /* Levels */
+  --red:#CC3333; --amber:#E67E22; --yellow:#D4A017; --teal:#27AE60; --indigo:#2E75B6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;background:var(--gray-100);color:var(--black);line-height:1.6;font-weight:400}
+h1,h2,h3,h4{font-weight:300;letter-spacing:-.01em}
+.screen{display:none}.screen.active{display:block}
+
+/* WELCOME */
+.welcome{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--black)}
+.welcome-card{background:var(--white);border-radius:4px;padding:3rem;max-width:620px;width:92%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.welcome-card h1{font-size:2rem;color:var(--black);margin-bottom:.3rem;font-weight:300}
+.welcome-card .sub{font-size:1rem;color:var(--prcs-orange);font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:.08em;font-size:.85rem}
+.welcome-card p{font-size:.9rem;color:var(--gray-600);margin-bottom:1rem;text-align:left}
+.welcome-card input{width:100%;padding:.75rem 1rem;border:1px solid var(--gray-200);border-radius:2px;font-size:1rem;margin-bottom:.7rem;outline:none;transition:border .2s;font-family:inherit}
+.welcome-card input:focus{border-color:var(--prcs-orange)}
+.btn{padding:.75rem 2.5rem;border:none;border-radius:2px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.06em;font-family:inherit}
+.btn-primary{background:var(--black);color:var(--white)}
+.btn-primary:hover{background:var(--prcs-orange)}
+.btn-primary::after{content:' \u2192';font-size:1.1em}
+
+/* SCAN HEADER */
+.scan-header{background:var(--black);padding:.8rem 1.5rem;border-bottom:none;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:1rem}
+.scan-header h2{font-size:.85rem;color:var(--white);white-space:nowrap;font-weight:400;text-transform:uppercase;letter-spacing:.06em}
+.progress-bar{flex:1;height:3px;background:var(--gray-800);border-radius:0;overflow:hidden}
+.progress-fill{height:100%;border-radius:0;transition:width .4s;background:var(--prcs-orange)}
+.progress-text{font-size:.82rem;color:var(--gray-400);white-space:nowrap}
+
+/* SCAN CONTENT */
+.scan-container{max-width:850px;margin:0 auto;padding:1.5rem}
+.domain-intro{background:var(--white);border-radius:2px;padding:1.5rem 2rem;margin-bottom:1.5rem;border-left:4px solid;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.domain-intro h3{font-size:1.2rem;margin-bottom:.2rem;font-weight:500}
+.domain-intro .dn{font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.1em;font-weight:500}
+.domain-intro p{font-size:.88rem;color:var(--gray-600)}
+
+/* QUESTION CARD */
+.q-card{background:var(--white);border-radius:2px;padding:1.5rem 2rem;margin-bottom:1.2rem;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:all .3s;border-left:4px solid transparent}
+.q-card.answered{border-left:4px solid var(--prcs-orange)}
+.q-label{font-size:.7rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.15rem;font-weight:500}
+.q-aspect{font-size:1rem;font-weight:600;margin-bottom:.2rem;color:var(--black)}
+.q-hint{font-size:.82rem;color:var(--gray-600);margin-bottom:1rem;font-style:italic}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:.4rem}
+.opt{display:flex;align-items:flex-start;gap:.7rem;padding:.65rem 1rem;border:1px solid var(--gray-200);border-radius:2px;cursor:pointer;transition:all .2s;position:relative}
+.opt:hover{border-color:var(--gray-400);background:#fafafa}
+.opt.selected{border-color:var(--prcs-orange);background:var(--prcs-orange-light)}
+.opt .radio{width:18px;height:18px;min-width:18px;border:2px solid #ccc;border-radius:50%;margin-top:2px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.opt.selected .radio{border-color:var(--prcs-orange);background:var(--prcs-orange)}
+.opt.selected .radio::after{content:'';width:6px;height:6px;background:var(--white);border-radius:50%}
+.opt .opt-body{flex:1}
+.opt .opt-level{font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:2px;color:var(--white);display:inline-block;margin-bottom:.2rem;text-transform:uppercase;letter-spacing:.04em}
+.opt .opt-text{font-size:.84rem;line-height:1.55;color:var(--gray-800)}
+.l1{background:var(--red)}.l2{background:var(--amber)}.l3{background:var(--yellow)}.l4{background:var(--teal)}.l5{background:var(--indigo)}
+
+/* NAV */
+.nav-buttons{display:flex;justify-content:space-between;margin-top:2rem;padding-bottom:2rem}
+.btn-nav{padding:.7rem 2rem;border:1px solid var(--gray-200);border-radius:2px;background:var(--white);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;text-transform:uppercase;letter-spacing:.04em}
+.btn-nav:hover{border-color:var(--black);color:var(--black)}
+.btn-nav.next{background:var(--black);color:var(--white);border-color:var(--black)}
+.btn-nav.next:hover{background:var(--prcs-orange);border-color:var(--prcs-orange)}
+.btn-nav.finish{background:var(--prcs-orange);color:var(--white);border-color:var(--prcs-orange)}
+.btn-nav.finish:hover{background:var(--prcs-orange-hover)}
+
+/* RESULTS */
+.results-header{background:var(--black);color:var(--white);padding:2.5rem 2rem;text-align:center}
+.results-header h1{font-size:1.8rem;margin-bottom:.3rem;font-weight:300}
+.results-header p{opacity:.6;font-size:.85rem}
+.results-container{max-width:1000px;margin:0 auto;padding:1.5rem}
+
+.overall-score{background:var(--white);border-radius:2px;padding:2.5rem;text-align:center;margin-bottom:2rem;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.score-big{font-size:4.5rem;font-weight:300;line-height:1}
+.score-label{font-size:.85rem;color:var(--gray-600);margin-top:.3rem}
+.score-level{display:inline-block;margin-top:.5rem;padding:.4rem 1.2rem;border-radius:2px;font-weight:600;font-size:.8rem;color:var(--white);text-transform:uppercase;letter-spacing:.04em}
+
+.flower-section{background:var(--white);border-radius:2px;padding:2rem;margin-bottom:2rem;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center}
+.flower-section h3{font-size:1.1rem;color:var(--black);margin-bottom:1rem;font-weight:500}
+
+.domain-result{background:var(--white);border-radius:2px;padding:1.5rem 2rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid}
+.domain-result h4{font-size:1rem;margin-bottom:.2rem;font-weight:600}
+.domain-score-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.domain-score-val{font-size:2rem;font-weight:300}
+.domain-score-bar{flex:1;height:6px;background:var(--gray-100);border-radius:0;overflow:hidden}
+.domain-score-fill{height:100%;border-radius:0;transition:width .6s}
+
+.sub-result{display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-top:1px solid var(--gray-100)}
+.sub-result .sub-name{width:200px;font-size:.84rem;font-weight:500}
+.sub-result .sub-bar{flex:1;height:4px;background:var(--gray-200);border-radius:0;overflow:hidden}
+.sub-result .sub-fill{height:100%;border-radius:0}
+.sub-result .sub-val{font-size:.85rem;font-weight:600;width:35px;text-align:right}
+.sub-result .sub-lbl{font-size:.72rem;color:var(--gray-600);width:130px}
+
+.tips-section{background:var(--white);border-radius:2px;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.tips-section h3{font-size:1.1rem;color:var(--black);margin-bottom:1rem;font-weight:500}
+.tip-card{padding:.8rem 1rem;border-radius:2px;margin-bottom:.5rem;font-size:.88rem}
+.tip-strength{background:#f0f7f0;border-left:3px solid var(--teal)}
+.tip-growth{background:var(--prcs-orange-light);border-left:3px solid var(--prcs-orange)}
+.tip-card strong{display:block;margin-bottom:.15rem}
+.tip-card .tip-desc{font-size:.82rem;color:var(--gray-600)}
+
+.print-btn{display:block;margin:2rem auto;padding:.8rem 2rem;background:var(--black);color:var(--white);border:none;border-radius:2px;font-size:.9rem;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.print-btn:hover{background:var(--prcs-orange)}
+
+/* PRCS footer */
+.prcs-footer{text-align:center;padding:2rem 1rem;font-size:.78rem;color:var(--gray-400)}
+.prcs-footer a{color:var(--prcs-orange);text-decoration:none}
+.prcs-footer a:hover{text-decoration:underline}
+
+@media print{.scan-header,.print-btn,.nav-buttons,.prcs-footer{display:none!important}.screen.active{display:block!important}body{background:#fff}}
+@media(max-width:600px){.sub-result{flex-wrap:wrap}.sub-result .sub-name{width:100%}}
+</style>
+</head>
+<body>
+
+<div id="welcomeScreen" class="screen active">
+<div class="welcome"><div class="welcome-card">
+  <h1>PRCS Leercultuur Scan</h1>
+  <div class="sub">Het lerend vermogen van jouw organisatie in beeld</div>
+  <p>Deze scan brengt de leercultuur van jouw organisatie in kaart aan de hand van de PRCS Bloem voor organisatieontwikkeling. Per onderdeel kies je de situatiebeschrijving die het beste bij jouw organisatie past.</p>
+  <p>De scan duurt ongeveer 15-20 minuten en bevat 30 vragen over vier domeinen. Na afloop krijg je een visueel profiel met sterke punten en groeikansen.</p>
+  <input type="text" id="orgName" placeholder="Naam van je organisatie (optioneel)">
+  <input type="text" id="respName" placeholder="Je naam (optioneel)">
+  <br><button class="btn btn-primary" onclick="startScan()">Start de scan</button>
+</div></div>
+</div>
+
+<div id="scanScreen" class="screen">
+  <div class="scan-header">
+    <h2>PRCS Leercultuur Scan</h2>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">0 / 30</div>
+  </div>
+  <div class="scan-container" id="scanContent"></div>
+</div>
+
+<div id="resultsScreen" class="screen"></div>
+
+<script>
+// ================================================================
+// SCAN DATA: 4 domeinen × 10 subonderdelen × 3 aspecten × 5 niveaus
+// ================================================================
+const domains = [
+{
+  name:"Besturing & Leiding", color:"#2B2B2B", colorLight:"#555", bg:"#F4F4F4",
+  desc:"Leiderschap creëert ruimte voor groei en stimuleert eigenaarschap en autonomie",
+  subs:[
+    { name:"Samenspel intern-extern", aspects:[
+      { title:"Relatie met de buitenwereld",
+        hint:"Hoe verhoudt jouw organisatie zich tot de externe context (klanten, markt, toezicht, politiek)?",
+        options:[
+          "De externe context wordt vooral als bedreiging of last ervaren. Er wordt pas gereageerd als het echt moet, bijvoorbeeld bij incidenten of externe druk.",
+          "Er is basaal contact met de buitenwereld, maar dit is vooral formeel en eenrichtingsverkeer. Klantfeedback komt binnen maar wordt niet systematisch benut.",
+          "Externe signalen worden actief verzameld en meegenomen in evaluaties. Er zijn vaste momenten waarop de buitenwereld wordt geraadpleegd.",
+          "Er is een actief samenspel met klanten, markt en toezichthouders. Externe inzichten worden continu vertaald naar interne verbeteringen en vernieuwingen.",
+          "De organisatie functioneert als open systeem: grenzen met de buitenwereld zijn vloeiend. Klanten, partners en stakeholders zijn medecreators van de koers."
+        ]},
+      { title:"Samenspel bestuurslagen",
+        hint:"Hoe werken bestuur, directie/management en de operatie samen?",
+        options:[
+          "De toezichthouder of het bestuur grijpt regelmatig direct in bij de operatie. Er is weinig vertrouwen tussen de lagen en veel controle.",
+          "Het bestuur stuurt op hoofdlijnen maar valt terug op controle zodra er problemen zijn. De relatie is functioneel maar niet lerend.",
+          "Er is een heldere governance-structuur met periodieke evaluaties. Het bestuur geeft ruimte maar reflecteert nog niet op het eigen functioneren.",
+          "Bestuurders sturen bewust op hoofdlijnen vanuit vertrouwen. Ze stellen vragen vanuit nieuwsgierigheid en reflecteren op hun eigen rol en invloed.",
+          "Alle bestuurslagen hanteren een lerende houding. Governance is gericht op het versterken van het lerend vermogen. Het samenspel is een voorbeeld voor de rest."
+        ]},
+      { title:"Experimenteerruimte vanuit bestuur",
+        hint:"In hoeverre geeft het bestuur ruimte om te experimenteren en te leren van fouten?",
+        options:[
+          "Fouten worden afgestraft of leiden tot verscherpt toezicht. Er is geen ruimte voor experimenteren.",
+          "Er is beperkte tolerantie voor fouten, maar de verwachting is dat het liefst in één keer goed gaat. Experimenten worden niet actief gestimuleerd.",
+          "Het bestuur erkent dat leren van fouten belangrijk is, maar in de praktijk domineert toch de neiging om risico's te vermijden.",
+          "Het bestuur stimuleert expliciet experimenteren en creëert veilige ruimte om te leren. Fouten worden besproken als leerkansen, niet als falen.",
+          "Het bestuur experimenteert zelf ook en deelt hun leerervaringen. Er is een cultuur van 'slim falen' op alle niveaus."
+        ]}
+    ]},
+    { name:"Strategie en koers", aspects:[
+      { title:"Richting en inspiratie",
+        hint:"Hoe inspirerend en richtinggevend is jullie strategie?",
+        options:[
+          "Er is geen heldere strategie, of deze is niet bekend bij medewerkers. Mensen weten niet goed waar de organisatie naartoe werkt.",
+          "Er is een strategie op papier, maar die voelt als een plicht. Medewerkers kennen de hoofdlijnen maar voelen zich er niet door geraakt.",
+          "De strategie is helder en motiveert. Medewerkers begrijpen de doelen en zien hun eigen bijdrage, maar de strategie voelt meer als een plan dan als een uitnodiging.",
+          "De strategie inspireert en nodigt expliciet uit tot vernieuwing. Er zijn heldere kaders die richting geven, met ruimte voor eigen invulling en initiatief.",
+          "De strategie leeft in de hele organisatie en wordt mede gevormd door experimenten en ideeën van medewerkers. De koers is ambitieus ('playing to win') en beweegt mee."
+        ]},
+      { title:"Herijking en aanpassing",
+        hint:"Hoe vaak en hoe fundamenteel wordt de strategie bijgesteld?",
+        options:[
+          "De strategie wordt zelden of nooit bijgesteld. Men volgt het oorspronkelijke plan, ook als de context verandert.",
+          "Er is een jaarlijkse strategiecyclus, maar bijstellingen zijn cosmetisch. Externe ontwikkelingen worden laat opgepakt.",
+          "De strategie wordt periodiek geëvalueerd en bijgesteld op basis van interne resultaten en externe signalen (klanten, markt, trends).",
+          "Er zijn kortcyclische tussenevaluaties ingebouwd. De strategie wordt actief gevoed door buitenwereld-signalen en medewerkersinzichten.",
+          "Strategie-evaluatie is continu. De organisatie heeft het vermogen om snel bij te sturen op basis van wat ze leert uit experimenten en marktfeedback."
+        ]},
+      { title:"Vertaling naar de werkvloer",
+        hint:"Hoe goed wordt de strategie vertaald naar het dagelijks werk?",
+        options:[
+          "De strategie is een abstract document dat geen relatie heeft met het dagelijks werk. Medewerkers vullen hun rol in op basis van gewoonte.",
+          "De strategie is vertaald naar afdelingsdoelen, maar de verbinding met individueel werk is onduidelijk.",
+          "Doelen zijn vertaald naar teams en individuen. Medewerkers weten hoe hun werk bijdraagt, maar er is weinig ruimte voor eigen invulling.",
+          "Strategie wordt congruent vertaald naar ieders toegevoegde waarde. Er is ruimte voor eigen invulling en ideeën die de koers mede bepalen.",
+          "Elke medewerker ervaart een directe verbinding tussen het eigen werk en de organisatieambities. Bottom-up initiatieven voeden de strategie."
+        ]}
+    ]},
+    { name:"Leiderschap en aansturing", aspects:[
+      { title:"Psychologische veiligheid",
+        hint:"In welke mate creëren leiders een veilige leeromgeving?",
+        options:[
+          "Leiders verwachten foutloos werk. Fouten leiden tot negatieve consequenties. Medewerkers houden zich gedeisd en nemen geen risico's.",
+          "Leiders zeggen dat fouten mogen, maar in de praktijk worden fouten toch als problematisch behandeld. De veiligheid is wisselend.",
+          "Leiders bieden een redelijk veilige omgeving. Fouten worden besproken, maar het constructieve conflict wordt nog niet actief gezocht.",
+          "Leiders combineren psychologische veiligheid met positieve taakspanning. Ze stimuleren constructief conflict en zien spanning als motor voor leren.",
+          "Veiligheid en uitdaging zijn diep verankerd. Leiders modelleren kwetsbaarheid en moedigen medewerkers aan om grenzen op te zoeken."
+        ]},
+      { title:"Leider als leerling",
+        hint:"In hoeverre zijn leiders zelf zichtbaar lerend?",
+        options:[
+          "Leiders presenteren zich als experts die alles weten. Twijfel tonen wordt gezien als zwakte.",
+          "Leiders erkennen soms dat ze iets niet weten, maar dit is eerder uitzondering dan regel. Ze staan niet stil bij hun eigen ontwikkeling.",
+          "Leiders reflecteren op hun functioneren en zijn open voor feedback, maar delen hun eigen leerproces niet actief met hun team.",
+          "Leiders zijn zichtbaar leerling: ze delen openlijk wat ze niet weten, stellen oprecht vragen, en tonen kwetsbaarheid als kracht.",
+          "Leiders zijn rolmodel van levenslang leren. Ze experimenteren zelf, delen hun fouten en inzichten, en inspireren anderen om hetzelfde te doen."
+        ]},
+      { title:"Veranderkundig leiderschap",
+        hint:"Hoe vakbekwaam zijn leiders in het begeleiden van verandering en vernieuwing?",
+        options:[
+          "Veranderingen worden van bovenaf opgelegd zonder begeleiding. Leiders missen de vaardigheden om verandering te leiden.",
+          "Leiders proberen veranderingen te begeleiden maar missen veranderkundige kennis. Ze vertrouwen vooral op communicatie en planning.",
+          "Leiders hebben basiskennis van verandermanagement en passen dit toe. Ze betrekken medewerkers maar verbinden vernieuwers en doeners nog niet bewust.",
+          "Leiders beschikken over veranderkundig vakmanschap. Ze verbinden vernieuwers en doeners, brengen de buitenwereld binnen, en begeleiden leerprocessen.",
+          "Leiders zijn meesterlijk in het regisseren van verandering. Ze creëren de condities waarin vernieuwing organisch ontstaat en duurzaam beklijft."
+        ]}
+    ]}
+  ]
+},
+{
+  name:"Mensen & Cultuur", color:"#3D6B3E", colorLight:"#5A8F5B", bg:"#F0F7F0",
+  desc:"Een cultuur van verbondenheid en eigenaarschap waarin leren de norm is",
+  subs:[
+    { name:"Gevoel en verbondenheid", aspects:[
+      { title:"Verbondenheid en belonging",
+        hint:"In welke mate voelen medewerkers zich verbonden met elkaar, hun vak en de organisatie?",
+        options:[
+          "Medewerkers voelen weinig verbondenheid. De sfeer is zakelijk en afstandelijk. Men komt voor het salaris, niet voor de missie.",
+          "Er is collegialiteit binnen teams, maar verbondenheid met de bredere organisatie en haar koers is beperkt.",
+          "Medewerkers voelen zich verbonden met hun directe team en vak. De organisatiekoers is bekend maar voelt niet altijd als 'van hen'.",
+          "Er is drieledige verbondenheid: met collega's, het vak én de koers. Medewerkers verbinden hun persoonlijke drijfveren aan het organisatiedoel.",
+          "Diepe verbondenheid en vertrouwen doordringen alles. Iedereen voelt eigenaarschap over de missie. De organisatie voelt als gemeenschap."
+        ]},
+      { title:"Psychologische veiligheid in de praktijk",
+        hint:"Hoe veilig voelt het om je uit te spreken, fouten te delen en 'ik weet het niet' te zeggen?",
+        options:[
+          "Mensen houden hun mond in vergaderingen. Fouten worden verborgen. Er heerst angst voor afrekening.",
+          "In kleine kring durven mensen zich uit te spreken, maar in grotere settings of richting leidinggevenden houdt men zich in.",
+          "Er is een redelijke openheid. Fouten worden besproken, maar de diepere oorzaken worden niet altijd onderzocht. Afwijkende meningen voelen nog kwetsbaar.",
+          "Afwijkende meningen worden geuit en gewaardeerd. Fouten worden besproken zonder blame. 'Ik weet het niet' is veilig en wordt gerespecteerd.",
+          "Psychologische veiligheid is de norm. Mensen zoeken actief afwijkende perspectieven op. Kwetsbaarheid wordt gezien als teken van kracht."
+        ]},
+      { title:"Diversiteit en inclusie als leerbron",
+        hint:"In welke mate worden diverse perspectieven benut als bron van leren?",
+        options:[
+          "Diversiteit is geen thema. Teams zijn homogeen in denken en achtergrond. Afwijkende perspectieven worden niet op prijs gesteld.",
+          "Er is enige diversiteit, maar deze wordt niet bewust benut. Mensen passen zich aan de dominante cultuur aan.",
+          "Diversiteit wordt erkend als belangrijk. Er zijn initiatieven, maar in de dagelijkse praktijk domineren nog de gangbare perspectieven.",
+          "Diverse perspectieven — in denkstijlen, achtergronden en ervaringen — worden actief gezocht en benut als verrijking voor besluitvorming en leren.",
+          "Inclusieve diversiteit is een kernwaarde die in alles merkbaar is. Het zoeken van het andere perspectief is een gewoonte op alle niveaus."
+        ]}
+    ]},
+    { name:"Samenwerking en gedrag", aspects:[
+      { title:"Meester en gezel",
+        hint:"In welke mate is iedereen tegelijk lerend en leraar?",
+        options:[
+          "Kennis is macht. Expertise wordt bewaakt, niet gedeeld. Er is een duidelijke hiërarchie in wie het weet en wie niet.",
+          "Ervaren medewerkers delen incidenteel kennis met nieuwelingen, maar dit is niet structureel. Leren is iets voor de minder ervaren collega's.",
+          "Er is bewustzijn dat iedereen kan leren en bijdragen, maar in de praktijk zijn het vooral de senioren die kennis delen.",
+          "Iedereen is tegelijk meester en gezel: men weet wat men te delen heeft en wat men nog te leren heeft. Deze houding is zichtbaar in het dagelijks werk.",
+          "De meester-gezel cultuur is diep verankerd. Kennis stroomt vrij in alle richtingen. Leren van elkaar is de natuurlijkste zaak."
+        ]},
+      { title:"Teamleren en reflectie",
+        hint:"In welke mate reflecteren teams gezamenlijk op hun samenwerking en resultaten?",
+        options:[
+          "Teams reflecteren niet. Er wordt alleen vooruit gekeken, nooit teruggeblikt. Successen en mislukkingen worden niet besproken.",
+          "Teams evalueren soms na een project, maar dit is oppervlakkig. Het gaat over inhoud, niet over samenwerking of leerproces.",
+          "Teams houden evaluaties en bespreken successen en teleurstellingen. De reflecties leiden soms tot aanpassingen.",
+          "Teams reflecteren regelmatig en diepgaand op zowel resultaten als samenwerking. Inzichten leiden tot concrete veranderingen. Constructieve spanning wordt benut als leerbron.",
+          "Teamleren is continu en verweven met het werk. Teams hebben gedeelde mentale modellen en passen zich voortdurend aan. Ze zoeken actief de spanning op om beter te worden."
+        ]},
+      { title:"Kennis over teamgrenzen heen",
+        hint:"In welke mate wordt er kennis gedeeld en gezocht buiten het eigen team?",
+        options:[
+          "Teams werken in silo's. Er is geen uitwisseling tussen afdelingen. Kennis wordt niet gedeeld buiten het eigen team.",
+          "Er is incidenteel contact tussen teams, meestal bij problemen. Kennisdeling over afdelingsgrenzen is afhankelijk van persoonlijke relaties.",
+          "Er zijn overlegstructuren tussen teams. Kennis wordt gedeeld als het relevant is, maar men zoekt niet actief buiten het eigen team.",
+          "Er is actieve cross-functionele uitwisseling via communities of practice, intervisie of gezamenlijke projecten. Men zoekt actief intern en extern naar relevante kennis.",
+          "De grenzen tussen teams zijn vloeiend. Externe netwerken zijn geïntegreerd. Kennis stroomt vrij door de hele organisatie en daarbuiten."
+        ]}
+    ]},
+    { name:"Competenties", aspects:[
+      { title:"Competentiebeeld",
+        hint:"In welke mate is er zicht op de competenties die nodig zijn voor nu en de toekomst?",
+        options:[
+          "Er is geen zicht op welke competenties aanwezig of nodig zijn. Ontwikkeling is ad hoc en niet gekoppeld aan organisatiedoelen.",
+          "Er zijn functiebeschrijvingen, maar geen levend beeld van aanwezige en gewenste competenties in relatie tot strategie.",
+          "Er is zicht op competenties, afgestemd op strategie en klantbehoeften. Ontwikkeling wordt gepland maar is vooral individueel.",
+          "Er is een dynamisch competentiebeeld dat meebeweegt met strategie. Leervermogen/metacognitie wordt als kerncompetentie gezien en ontwikkeld.",
+          "Competentieprofielen evolueren continu. De organisatie is in staat om zichzelf opnieuw uit te vinden qua benodigde kennis en vaardigheden."
+        ]},
+      { title:"Adaptief vermogen",
+        hint:"In hoeverre zijn medewerkers 'gegrond en flexibel' — stevig in hun vak én wendbaar?",
+        options:[
+          "Medewerkers zijn ofwel star en vasthoudend aan het bekende, ofwel onzeker en zonder stevig fundament. Verandering roept vooral weerstand op.",
+          "Medewerkers zijn vakbekwaam maar vinden verandering lastig. Ze doen wat gevraagd wordt maar nemen niet zelf initiatief tot vernieuwing.",
+          "Medewerkers staan stevig in hun vak en staan open voor verandering, maar initiëren deze zelden zelf. Wendbaarheid is reactief.",
+          "Medewerkers zijn gegrond en flexibel tegelijk. Ze staan stevig in hun vakmanschap én zijn wendbaar bij verandering. Ze zien verandering als kans.",
+          "Adaptief vermogen is een tweede natuur. Medewerkers combineren diep vakmanschap met brede samenwerking (T-shaped). Ze vernieuwen proactief."
+        ]},
+      { title:"Samenwerkingsvaardigheden",
+        hint:"Hoeveel aandacht krijgen vaardigheden als luisteren, perspectief nemen, en feedback geven?",
+        options:[
+          "Samenwerkingsvaardigheden krijgen geen aandacht. Samenwerking wordt als vanzelfsprekend beschouwd — het gaat om de inhoud.",
+          "Er is beperkte aandacht voor samenwerking, vooral als er conflicten zijn. Feedback geven is oncomfortabel voor de meesten.",
+          "Samenwerkingsvaardigheden worden erkend als belangrijk. Er zijn trainingen, maar in de dagelijkse praktijk schiet het erbij in.",
+          "Samenwerkingsvaardigheden krijgen evenveel aandacht als vakinhoud. Luisteren, perspectief nemen, feedback geven en ontvangen zijn ontwikkelde vaardigheden.",
+          "Samenwerkingsvaardigheden zijn op het hoogste niveau. Men voert moeiteloos 'flinke gesprekken' en maakt conflicten productief."
+        ]}
+    ]}
+  ]
+},
+{
+  name:"Inrichting & Processen", color:"#1E3A5F", colorLight:"#6B9AC4", bg:"#EDF3FA",
+  desc:"Heldere structuur als houvast voor een lerende cultuur",
+  subs:[
+    { name:"Structuur en verantwoordelijkheid", aspects:[
+      { title:"Helderheid en autonomie",
+        hint:"Hoe helder is de taakverdeling en hoeveel autonomie hebben medewerkers?",
+        options:[
+          "Taakverdeling is onduidelijk. Medewerkers weten niet goed wat er verwacht wordt. Er is weinig autonomie — alles moet via de leidinggevende.",
+          "Taken zijn beschreven maar statisch. Medewerkers weten wat ze moeten doen, maar hebben weinig ruimte voor eigen invulling.",
+          "Taakverdeling is helder en medewerkers begrijpen hoe hun werk bijdraagt aan het geheel. Er is enige autonomie in de uitvoering.",
+          "Er is heldere structuur ('wat') met veel autonomie in uitvoering ('hoe'). Medewerkers begrijpen hun bijdrage aan bredere doelen en vullen deze zelf in.",
+          "Structuur is dienend aan het doel, niet leidend. Teams organiseren zich rond opdrachten en leren. Verantwoordelijkheden zijn helder én vloeiend."
+        ]},
+      { title:"Leerstructuren",
+        hint:"In welke mate zijn er bewuste structuren ingericht om leren te bevorderen?",
+        options:[
+          "Er zijn geen bewuste leerstructuren. Leren gebeurt toevallig of helemaal niet. Teams zijn niet samengesteld met leren in gedachten.",
+          "Er is incidenteel een intervisie of teamdag, maar dit is niet structureel. Leerstructuren zijn afhankelijk van individuele leidinggevenden.",
+          "Er zijn vaste momenten voor leren: intervisie, teamreflecties, of leer-duo's. Maar deze worden niet altijd als prioriteit ervaren.",
+          "Er zijn bewuste leerstructuren ingebouwd: intervisiegroepen, leer-duo's, reflectiemomenten in overleggen, en innovatietijd ('lummel-tijd').",
+          "Leerstructuren zijn verweven met het werk. Triple loop learning is ingebed: men verbetert niet alleen het werk, maar bevraagt ook het systeem zelf."
+        ]},
+      { title:"Netwerken en communities",
+        hint:"In hoeverre zijn er netwerken die kennis verbinden over afdelingsgrenzen heen?",
+        options:[
+          "Afdelingen werken volledig gescheiden. Er zijn geen structuren om kennis te verbinden. Vakmanschap is versnipperd.",
+          "Er zijn organieke contacten tussen afdelingen, maar geen formele netwerken. Kennisdeling is afhankelijk van persoonlijke initiatieven.",
+          "Er zijn werkgroepen of projectteams over afdelingen heen, maar deze zijn taakgericht en niet primair gericht op leren.",
+          "Er bestaan communities of practice en netwerken die kennis verbinden over afdelingsgrenzen heen. Vakmanschap wordt samengebracht.",
+          "Netwerken zijn een integraal onderdeel van hoe de organisatie werkt. Ze verbinden interne en externe kennis en zijn zelforganiserend."
+        ]}
+    ]},
+    { name:"Processen en taakverdeling", aspects:[
+      { title:"Balans houvast en wendbaarheid",
+        hint:"In hoeverre bieden processen zowel structuur als ruimte voor aanpassing?",
+        options:[
+          "Processen zijn ofwel rigide en verstikkend, ofwel afwezig. Er is geen balans tussen structuur en vrijheid.",
+          "Processen zijn ingericht maar statisch. Ze bieden houvast maar geen ruimte voor eigen invulling of aanpassing.",
+          "Processen zijn richtinggevend en bieden enige ruimte. Maar aanpassingen moeten door veel lagen en duren lang.",
+          "Processen helpen voor houvast en bieden bewust ruimte voor eigen invulling — richtinggevend maar niet beklemmend. Wendbaar bijsturen kan.",
+          "Processen zijn zelflerend: ze passen zich aan op basis van data en ervaring. Medewerkers zijn mede-eigenaar van de procesverbetering."
+        ]},
+      { title:"Leren van ervaring",
+        hint:"In welke mate is het evalueren en leren van ervaring ingebouwd in jullie werkprocessen?",
+        options:[
+          "Er wordt niet teruggeblikt op projecten of ervaringen. Fouten worden herhaald. Er zijn geen evaluatiemomenten.",
+          "Na grote projecten is er soms een evaluatie, maar de uitkomsten verdwijnen in een rapport. Lessen leiden zelden tot verandering.",
+          "Evaluaties zijn ingericht (retrospectives, projectevaluaties). Inzichten worden besproken maar vertaling naar actie is wisselend.",
+          "After action reviews en retrospectives zijn standaard en leiden tot daadwerkelijke aanpassingen. Er zijn processen voor experimenteren: starten, evalueren, delen, schalen.",
+          "Leren van ervaring is continu en verweven met het werk. Elke ervaring — groot of klein — wordt benut. De organisatie heeft een 'lerend geheugen'."
+        ]},
+      { title:"Kennismanagement",
+        hint:"Hoe wordt kennis vastgelegd, gedeeld en levend gehouden?",
+        options:[
+          "Kennis zit in de hoofden van individuen. Als iemand vertrekt, verdwijnt de kennis mee. Er is geen systematiek.",
+          "Kennis wordt soms vastgelegd in documenten, maar deze zijn verouderd of onvindbaar. Er is geen actief kennisbeleid.",
+          "Er is een visie op kennisdeling. Kennis wordt vastgelegd en er zijn platforms, maar het gebruik is wisselend.",
+          "Kennismanagement is als proces ingericht: kennis wordt actief vastgelegd, geactualiseerd en toegankelijk gemaakt. Er is een bewust onderscheid tussen vernieuwen, verbeteren en beheren.",
+          "Kennis stroomt vrij en wordt continu verrijkt. Impliciete kennis wordt expliciet gemaakt. De organisatie leert als geheel van elke ervaring."
+        ]}
+    ]}
+  ]
+},
+{
+  name:"Middelen & Systemen", color:"#F7951D", colorLight:"#FBBC6A", bg:"#FEF0DC",
+  desc:"Verankeren van het leren in de organisatie",
+  subs:[
+    { name:"Middelen", aspects:[
+      { title:"Tijd en budget voor leren",
+        hint:"In welke mate is er tijd en geld beschikbaar voor het versterken van het lerend vermogen?",
+        options:[
+          "Er is geen budget of tijd voor leren. Leren wordt gezien als luxe die niet past bij de werkdruk.",
+          "Er is een opleidingsbudget, maar dit wordt vooral besteed aan verplichte trainingen. Tijd voor leren moet 'erbij' worden gedaan.",
+          "Er is budget en tijd voor leren. Dit wordt vooral besteed aan formele opleidingen. Informeel leren wordt erkend maar niet gefaciliteerd.",
+          "Leertijd is een investering, geen kostenpost. Het 70-20-10 principe wordt gehanteerd: leren in het werk, van anderen, en formeel. Er is ook budget op teamniveau.",
+          "Leren is volledig verweven met het werk. Elke ervaring is een leerkans. Het onderscheid tussen werken en leren vervaagt. Budget is toereikend en flexibel."
+        ]},
+      { title:"Leren in performance management",
+        hint:"In welke mate wordt leren en ontwikkeling gewaardeerd in beoordelingen en gesprekken?",
+        options:[
+          "Performance management gaat uitsluitend over output en resultaten. Leren en ontwikkeling spelen geen rol in beoordelingen.",
+          "Er is een ontwikkelparagraaf in het beoordelingsgesprek, maar deze voelt als verplicht nummer. De nadruk ligt op targets.",
+          "Leren en ontwikkeling zijn onderdeel van de gesprekkencyclus. Er wordt gesproken over competenties, maar output weegt zwaarder.",
+          "Performance management waardeert nadrukkelijk wat iemand heeft geleerd en bijgedragen — naast output ook input, energie en groei.",
+          "Er is een continue dialoog over ontwikkeling. Leren, bijdragen en vernieuwen wegen zwaar in de waardering. De cyclus is ontwikkelingsgericht."
+        ]},
+      { title:"Portfolio van leeractiviteiten",
+        hint:"Hoe breed en diep is het aanbod van leeractiviteiten?",
+        options:[
+          "Er is geen aanbod van leeractiviteiten, of alleen wettelijk verplichte cursussen.",
+          "Er is een beperkt aanbod van trainingen, vooral vakinhoudelijk. Het initiatief ligt bij de medewerker.",
+          "Er is een breder portfolio met trainingen, workshops en soms coaching. Het aanbod sluit aan bij organisatiedoelen.",
+          "Het portfolio dekt het hele spectrum: werkplekleren, leren van en met anderen (intervisie, coaching, mentoring), en formeel leren. Het versterkt het lerend vermogen.",
+          "Het portfolio is adaptief en innoverend. Nieuwe leervormen worden continu geëxperimenteerd. Het aanbod wordt mede vormgegeven door medewerkers."
+        ]}
+    ]},
+    { name:"Systemen", aspects:[
+      { title:"Systemen die leren faciliteren",
+        hint:"In welke mate ondersteunen jullie systemen het leren in het dagelijks werk?",
+        options:[
+          "Er zijn geen systemen voor kennisdeling. Informatie zit in e-mail, losse bestanden en hoofden.",
+          "Er is basis-infrastructuur (bijv. gedeelde schijf, Teams/Slack), maar deze wordt niet gericht ingezet voor leren.",
+          "Er zijn systemen voor kennisdeling (LMS, kennisbank, intranet), maar deze staan los van het dagelijks werk en worden wisselend gebruikt.",
+          "Systemen faciliteren leren als onderdeel van het dagelijks werk — geïntegreerd, niet als apart systeem. Er is ook een sociaal leerplatform voor informele uitwisseling.",
+          "Slimme, adaptieve systemen herkennen leerbehoeften en ondersteunen proactief. Leren is naadloos verweven met werken."
+        ]},
+      { title:"Data-gedreven verbeteren",
+        hint:"In welke mate worden data en feiten benut voor leren en verbeteren?",
+        options:[
+          "Er worden geen data verzameld of benut voor verbetering. Beslissingen zijn gebaseerd op gevoel of gewoonte.",
+          "Er zijn data beschikbaar (klanttevredenheid, procescijfers), maar deze worden zelden benut voor leren of verbeteren.",
+          "Data worden periodiek geanalyseerd en besproken. Dit leidt soms tot verbeteracties, maar niet systematisch.",
+          "Data over processen, klanttevredenheid en resultaten zijn breed beschikbaar en worden actief benut door teams voor evidence-based verbetering.",
+          "De organisatie is data-wise: data worden real-time benut, patronen worden herkend, en leren is evidence-based op alle niveaus."
+        ]},
+      { title:"Onboarding en leercultuur",
+        hint:"In welke mate worden nieuwe medewerkers geïntroduceerd in de leercultuur?",
+        options:[
+          "Onboarding is minimaal: een rondleiding en een werkplek. Nieuwe medewerkers moeten zelf uitzoeken hoe het werkt.",
+          "Er is een onboarding-programma gericht op taken en procedures. De leercultuur of beschikbare leermiddelen komen niet aan bod.",
+          "Onboarding omvat naast het werk ook kennismaking met collega's en overlegstructuren. De leercultuur wordt benoemd maar niet ervaren.",
+          "De onboarding introduceert nieuwe medewerkers expliciet in de leercultuur: ze ervaren hoe leren werkt, kennen de systemen, en krijgen een buddy of mentor.",
+          "Onboarding is een onderdompeling in de leercultuur. Nieuwe medewerkers worden vanaf dag één uitgenodigd om te leren, te delen, en te experimenteren."
+        ]}
+    ]}
+  ]
+}
+];
+
+const levelLabels = ["1 — Reactief","2 — Gestructureerd","3 — Gericht op verbetering","4 — Lerend","5 — Transformatief"];
+const levelShort = ["Reactief","Gestructureerd","Verbetering","Lerend","Transformatief"];
+const levelColors = ["#CC3333","#E67E22","#D4A017","#27AE60","#2E75B6"];
+const domainColors = ["#2B2B2B","#3D6B3E","#1E3A5F","#F7951D"];
+
+let answers = {};
+let currentDomain = 0;
+let totalQuestions = 0;
+domains.forEach(d => d.subs.forEach(s => { totalQuestions += s.aspects.length; }));
+
+function startScan(){
+  document.getElementById('welcomeScreen').classList.remove('active');
+  document.getElementById('scanScreen').classList.add('active');
+  renderDomain(0);
+}
+
+function renderDomain(idx){
+  currentDomain = idx;
+  const d = domains[idx];
+  const c = document.getElementById('scanContent');
+  let html = `<div class="domain-intro" style="border-color:${d.color}">
+    <div class="dn">Domein ${idx+1} van ${domains.length}</div>
+    <h3 style="color:${d.color}">${d.name}</h3>
+    <p>${d.desc}</p>
+  </div>`;
+
+  d.subs.forEach((sub, si) => {
+    sub.aspects.forEach((asp, ai) => {
+      const key = `${idx}-${si}-${ai}`;
+      const ans = answers[key];
+      html += `<div class="q-card ${ans !== undefined ? 'answered' : ''}" id="qc-${key}">
+        <div class="q-label">${sub.name}</div>
+        <div class="q-aspect">${asp.title}</div>
+        <div class="q-hint">${asp.hint}</div>
+        <div class="options">`;
+      asp.options.forEach((opt, oi) => {
+        const val = oi + 1;
+        const sel = ans === val ? 'selected' : '';
+        html += `<div class="opt ${sel}" onclick="pick('${key}',${val},this)">
+          <div class="radio"></div>
+          <div class="opt-body">
+            <span class="opt-level l${val}">${levelShort[oi]}</span>
+            <div class="opt-text">${opt}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+  });
+
+  html += `<div class="nav-buttons">`;
+  html += idx > 0 ? `<button class="btn-nav" onclick="renderDomain(${idx-1})">&#8592; Vorig domein</button>` : `<div></div>`;
+  html += idx < domains.length - 1
+    ? `<button class="btn-nav next" onclick="renderDomain(${idx+1})">Volgend domein &#8594;</button>`
+    : `<button class="btn-nav finish" onclick="showResults()">Bekijk resultaten &#10003;</button>`;
+  html += `</div>`;
+
+  c.innerHTML = html;
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function pick(key, val, el){
+  answers[key] = val;
+  const card = document.getElementById('qc-' + key);
+  card.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  card.classList.add('answered');
+  updateProgress();
+  // Auto-scroll to next unanswered
+  setTimeout(() => {
+    const next = card.nextElementSibling;
+    if (next && next.classList.contains('q-card') && !next.classList.contains('answered')) {
+      next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 300);
+}
+
+function updateProgress(){
+  const n = Object.keys(answers).length;
+  document.getElementById('progressFill').style.width = (n/totalQuestions*100)+'%';
+  document.getElementById('progressText').textContent = `${n} / ${totalQuestions}`;
+}
+
+// ================================================================
+// RESULTS
+// ================================================================
+function showResults(){
+  document.getElementById('scanScreen').classList.remove('active');
+  document.getElementById('resultsScreen').classList.add('active');
+
+  const orgName = document.getElementById('orgName').value || 'Jouw organisatie';
+  const respName = document.getElementById('respName').value || '';
+
+  let domainScores = [];
+  let allScores = [];
+
+  domains.forEach((d, di) => {
+    let dScores = [];
+    let dSubs = [];
+    d.subs.forEach((sub, si) => {
+      let sScores = [];
+      sub.aspects.forEach((asp, ai) => {
+        const val = answers[`${di}-${si}-${ai}`] || 3;
+        sScores.push(val);
+        allScores.push(val);
+      });
+      const avg = sScores.reduce((a,b) => a+b, 0) / sScores.length;
+      dSubs.push({ name: sub.name, score: avg });
+      dScores.push(...sScores);
+    });
+    const avg = dScores.reduce((a,b) => a+b, 0) / dScores.length;
+    domainScores.push({ name: d.name, score: avg, color: d.color, subs: dSubs });
+  });
+
+  const overall = allScores.reduce((a,b) => a+b, 0) / allScores.length;
+  const li = Math.min(Math.max(Math.floor(overall)-1, 0), 4);
+
+  // Build HTML
+  let h = `<div class="results-header">
+    <h1>Resultaten Leercultuur Scan</h1>
+    <p>${orgName}${respName ? ' — ingevuld door '+respName : ''} — ${new Date().toLocaleDateString('nl-NL')}</p>
+  </div><div class="results-container">
+    <div class="overall-score">
+      <div class="score-big" style="color:${levelColors[li]}">${overall.toFixed(1)}</div>
+      <div class="score-label">Gemiddelde score (schaal 1-5)</div>
+      <div class="score-level" style="background:${levelColors[li]}">${levelLabels[li]}</div>
+    </div>
+    <div class="flower-section">
+      <h3>PRCS Bloem — Leercultuur Profiel</h3>
+      <canvas id="radarCanvas" width="550" height="550"></canvas>
+    </div>`;
+
+  // Per-domain detail
+  domainScores.forEach((ds, i) => {
+    h += `<div class="domain-result" style="border-color:${ds.color}">
+      <h4 style="color:${ds.color}">${ds.name}</h4>
+      <div class="domain-score-row">
+        <div class="domain-score-val" style="color:${ds.color}">${ds.score.toFixed(1)}</div>
+        <div class="domain-score-bar">
+          <div class="domain-score-fill" style="width:${ds.score/5*100}%;background:${ds.color}"></div>
+        </div>
+      </div>`;
+    ds.subs.forEach(sub => {
+      const sl = Math.min(Math.max(Math.floor(sub.score)-1,0),4);
+      h += `<div class="sub-result">
+        <div class="sub-name">${sub.name}</div>
+        <div class="sub-bar"><div class="sub-fill" style="width:${sub.score/5*100}%;background:${levelColors[sl]}"></div></div>
+        <div class="sub-val" style="color:${levelColors[sl]}">${sub.score.toFixed(1)}</div>
+        <div class="sub-lbl">${levelLabels[sl]}</div>
+      </div>`;
+    });
+    h += `</div>`;
+  });
+
+  // Strengths & growth
+  const allSubs = domainScores.flatMap(d => d.subs.map(s => ({...s, domain: d.name})));
+  const sorted = [...allSubs].sort((a,b) => b.score - a.score);
+  const strengths = sorted.slice(0, 3);
+  const growth = [...allSubs].sort((a,b) => a.score - b.score).slice(0, 3);
+
+  // Growth tips per sub
+  const growthTips = {
+    "Samenspel intern-extern": "Organiseer kwartaalgesprekken met externe stakeholders en vertaal inzichten direct naar interne verbeteracties.",
+    "Strategie en koers": "Plan kortcyclische strategiereviews (per kwartaal) en nodig medewerkers uit om bottom-up ideeën in te brengen.",
+    "Leiderschap en aansturing": "Start een leiderschapsprogramma gericht op kwetsbaarheid, veranderkundig vakmanschap en het verbinden van vernieuwers met doeners.",
+    "Gevoel en verbondenheid": "Investeer in rituelen die verbinding versterken: check-ins in overleggen, het vieren van successen, en het bespreken van fouten zonder blame.",
+    "Samenwerking en gedrag": "Richt intervisie of communities of practice in die teamgrenzen overschrijden. Stimuleer de meester-gezel houding.",
+    "Competenties": "Breng gewenste competenties in kaart in relatie tot de strategie. Investeer in samenwerkingsvaardigheden naast vakinhoud.",
+    "Structuur en verantwoordelijkheid": "Creëer bewuste leerstructuren: leer-duo's, reflectiemomenten in overleggen, en innovatietijd.",
+    "Processen en taakverdeling": "Bouw after action reviews in als standaard na projecten en experimenten. Richt kennismanagement in als levend proces.",
+    "Middelen": "Verschuif budget naar het 70-20-10 model. Introduceer leerbudget op teamniveau. Waardeer leren in performance management.",
+    "Systemen": "Integreer leermogelijkheden in het dagelijks werk. Maak data breed beschikbaar voor evidence-based verbetering."
+  };
+
+  h += `<div class="tips-section"><h3>Top 3 sterke punten</h3>`;
+  strengths.forEach(s => {
+    h += `<div class="tip-card tip-strength"><strong>${s.name}</strong> (${s.domain}) — score ${s.score.toFixed(1)}: ${levelLabels[Math.min(Math.max(Math.floor(s.score)-1,0),4)]}</div>`;
+  });
+  h += `</div><div class="tips-section"><h3>Top 3 groeikansen</h3>`;
+  growth.forEach(s => {
+    const tip = growthTips[s.name] || '';
+    h += `<div class="tip-card tip-growth"><strong>${s.name}</strong> (${s.domain}) — score ${s.score.toFixed(1)}<div class="tip-desc">${tip}</div></div>`;
+  });
+  h += `</div>`;
+
+  h += `<button class="print-btn" onclick="window.print()">Afdrukken / PDF opslaan</button>
+  <div class="prcs-footer">PRCS Leercultuur Scan &mdash; ontwikkeld door <a href="https://www.prcs.nl" target="_blank">PRCS</a></div></div>`;
+
+  document.getElementById('resultsScreen').innerHTML = h;
+  window.scrollTo(0, 0);
+  setTimeout(() => drawRadar(domainScores), 150);
+}
+
+// ================================================================
+// RADAR CHART
+// ================================================================
+function drawRadar(ds){
+  const canvas = document.getElementById('radarCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, maxR = 200;
+
+  const subs = ds.flatMap((d,di) => d.subs.map(s => ({name:s.name, score:s.score, color:d.color, di})));
+  const n = subs.length;
+  const step = Math.PI*2/n;
+  const start = -Math.PI/2;
+
+  ctx.clearRect(0,0,W,H);
+
+  // Grid
+  for(let lv=1;lv<=5;lv++){
+    const r = lv/5*maxR;
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){
+      const a = start+i*step;
+      const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = lv===3?'#bbb':'#e0e0e0';
+    ctx.lineWidth = lv===3?1.5:.8;
+    ctx.stroke();
+    // Fill alternating
+    if(lv%2===0){
+      ctx.fillStyle = 'rgba(0,0,0,0.015)';
+      ctx.fill();
+    }
+    ctx.fillStyle='#aaa'; ctx.font="10px 'DM Sans',Arial";
+    ctx.fillText(lv.toString(), cx+4, cy-r+12);
+  }
+
+  // Axes + labels
+  subs.forEach((s,i) => {
+    const a = start+i*step;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+maxR*Math.cos(a), cy+maxR*Math.sin(a));
+    ctx.strokeStyle='#ddd'; ctx.lineWidth=.8; ctx.stroke();
+
+    const lx = cx+(maxR+30)*Math.cos(a);
+    const ly = cy+(maxR+30)*Math.sin(a);
+    ctx.save();
+    ctx.fillStyle=s.color; ctx.font="bold 10px 'DM Sans',Arial";
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const words = s.name.split(' ');
+    let lines=[], line='';
+    words.forEach(w => {
+      if((line+' '+w).length>16 && line){ lines.push(line); line=w; }
+      else line=line?line+' '+w:w;
+    });
+    if(line) lines.push(line);
+    lines.forEach((l,li) => ctx.fillText(l, lx, ly+(li-(lines.length-1)/2)*12));
+    ctx.restore();
+  });
+
+  // Data shape with gradient per domain
+  // First: overall filled shape
+  ctx.beginPath();
+  subs.forEach((s,i) => {
+    const a=start+i*step, r=s.score/5*maxR;
+    i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+  });
+  ctx.closePath();
+  ctx.fillStyle='rgba(247,149,29,0.1)'; ctx.fill();
+  ctx.strokeStyle='rgba(247,149,29,0.7)'; ctx.lineWidth=2.5; ctx.stroke();
+
+  // Domain-colored areas
+  let si2=0;
+  ds.forEach((d,di) => {
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    d.subs.forEach(sub => {
+      const a=start+si2*step, r=sub.score/5*maxR;
+      ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+      si2++;
+    });
+    ctx.closePath();
+    ctx.fillStyle=domainColors[di]+'20'; ctx.fill();
+  });
+
+  // Points
+  subs.forEach((s,i) => {
+    const a=start+i*step, r=s.score/5*maxR;
+    const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+    ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2);
+    ctx.fillStyle=s.color; ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    // Score label
+    ctx.fillStyle=s.color; ctx.font="bold 11px 'DM Sans',Arial"; ctx.textAlign='center';
+    const lox = x + 15*Math.cos(start+i*step);
+    const loy = y + 15*Math.sin(start+i*step);
+    ctx.fillText(s.score.toFixed(1), lox, loy);
+  });
+
+  // Center
+  ctx.fillStyle='#F7951D'; ctx.font="bold 15px 'DM Sans',Arial"; ctx.textAlign='center';
+  ctx.fillText('PRCS',cx,cy-6);
+  ctx.font="10px 'DM Sans',Arial"; ctx.fillStyle='#999';
+  ctx.fillText('Leercultuur',cx,cy+10);
+}
+</script>
+</body>
+</html>
